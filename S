@@ -1,0 +1,17 @@
+from st7735 import ST7735
+from PIL import Image, ImageDraw
+import time, math
+
+disp = ST7735(port=0, cs=0, dc=25, rst=27, width=160, height=80, rotation=0)
+disp.begin()
+
+for t in range(200):
+    img = Image.new("RGB", (160, 80), (
+        int((math.sin(t/10) * 127) + 128),
+        int((math.sin(t/10 + 2) * 127) + 128),
+        int((math.sin(t/10 + 4) * 127) + 128)
+    ))
+    draw = ImageDraw.Draw(img)
+    draw.text((40, 30), "Rozaeta", fill="white")
+    disp.display(img)
+    time.sleep(0.05)
