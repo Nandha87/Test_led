@@ -1,0 +1,46 @@
+from luma.core.interface.serial import spi
+from luma.lcd.device import st7735
+from PIL import Image, ImageDraw, ImageFont
+import time, math
+
+# SPI setup (use your pin mapping)
+serial = spi(port=0, device=0, gpio_DC=25, gpio_RST=27)
+device = st7735(serial, width=160, height=80, rotate=0)
+
+# Load default font
+font = ImageFont.load_default()
+
+def fade_color(t):
+    # Smooth rainbow color cycling
+    r = int((math.sin(t) * 127) + 128)
+    g = int((math.sin(t + 2) * 127) + 128)
+    b = int((math.sin(t + 4) * 127) + 128)
+    return (r, g, b)
+
+def launch_animation():
+    for t in range(200):
+        img = Image.new("RGB", device.size, fade_color(t/10))
+        draw = ImageDraw.Draw(img)
+
+        # Circle pulse
+        radius = int(20 + 10 * math.sin(t/5))
+        x, y = device.width//2, device.height//2
+        draw.ellipse((x-radius, y-radius, x+radius, y+radius), outline="white", width=2)
+
+        # Text animation
+        text = "Rozaeta"
+        w, h = draw.textsize(text, font)
+        draw.text(((device.width - w) / 2, (device.height - h) / 2), text, font=font, fill="white")
+
+        device.display(img)
+        time.sleep(0.05)
+
+    # Final logo hold
+    img = Image.new("RGB", device.size, "black")
+    draw = ImageDraw.Draw(img)
+    draw.text((device.width/2 - 25, device.height/2 - 5), "Rozaeta", font=font, fill="white")
+    device.display(img)
+
+if __name__ == "__main__":
+    device.clear()
+    launch_animation()
